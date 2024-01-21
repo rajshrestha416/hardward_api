@@ -10,7 +10,6 @@ router.post('/register', userController.register)
 
 router.get('/all', userController.allUser)
 
-
 router.get('/my-profile', verifyUser, userController.myProfile)
 
 router.put('/update-profile/:id', userController.updateProfile)

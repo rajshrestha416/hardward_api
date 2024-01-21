@@ -98,7 +98,7 @@ class UserController {
                     const user = await userModel.create({ ...req.body, password: hash });
                     if (user) {
                         return res.status(httpStatus.OK).json({
-                            status: true,
+                            success: true,
                             msg: 'Registration Completed'
                         });
                     } else {
