@@ -31,7 +31,8 @@ class UserController {
             }
 
             const user = await userModel.findOne({
-                email: req.body.email
+                email: req.body.email,
+                is_deleted: false
             }).lean();
             if (!user) {
                 return res.status(httpStatus.NOT_FOUND).json({
@@ -82,7 +83,8 @@ class UserController {
             }
 
             const checkUserExist = await userModel.findOne({
-                email: req.body.email
+                email: req.body.email,
+                is_deleted: false
             });
             if (checkUserExist) {
                 return res.status(httpStatus.CONFLICT).json({
@@ -135,6 +137,22 @@ class UserController {
             });
         }
     };
+
+    myProfile = async (req, res, next) => {
+        try {
+            const {password, role, is_deleted, createdAt, updatedAt, __v, ...data} = req.user
+            return res.status(httpStatus.OK).json({
+                success: true,
+                msg: "User!!",
+                data : data
+            });
+        } catch (error) {
+            return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                msg: "Something Went Wrong!!"
+            });
+        }
+    }
 
     updateProfile = async (req, res, next) => {
         try {
