@@ -1,9 +1,9 @@
-import express, { json, urlencoded } from 'express';
-// import http from 'http';
+const express = require('express');
+// const http = require('http');
 require('dotenv').config();
-import cors from 'cors';
-// import { join } from 'path';
-import connectDB from './configs/db.config';
+const cors = require('cors');
+// const path = require('path');
+const connectDB = require('./configs/db.config');
 const app = express();
 connectDB();
 
@@ -23,9 +23,9 @@ app.use(
   })
 );
 
-app.use(json({ limit: '50mb' }));
+app.use(express.json({ limit: '50mb' }));
 app.use(
-  urlencoded({
+  express.urlencoded({
     extended: false,
     limit: '50mb'
   })
@@ -40,8 +40,7 @@ app.get('/', (req, res) => {
 });
 
 // Define your routes using Express Router
-import router from './src/routes/allRoutes';
-app.use('/api', router);
+app.use('/api', require("./routes/index"));
 
 const port = process.env.PORT || 8888;
 const url = process.env.URL;

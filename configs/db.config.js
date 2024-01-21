@@ -1,4 +1,4 @@
-import { connect } from 'mongoose';
+const {connect} = require("mongoose");
 
 const URL = process.env.MONGO_DB_REMOTE;
 const APP_NAME = process.env.APP_NAME;
@@ -17,4 +17,4 @@ const connectDB = async () => {
   console.log(`Establishing connection for database: ${APP_NAME} || with URL ${URL}`);
 };
 
-export default connectDB;
+module.exports = connectDB
