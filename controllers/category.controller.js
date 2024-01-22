@@ -88,7 +88,7 @@ class CategoryController {
 
     getCategories = async (req, res) => {
         try {
-            const {page=1, size=10, sort} = req.query
+            const {page=1, size=10, sort = {_id:-1}} = req.query
             const categories = await categoryModel.find({
                 is_active: true,
                 is_deleted: false

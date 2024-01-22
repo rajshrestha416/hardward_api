@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 
 const variantSchema = new Schema({
     sku: {type: String},
+    stock: {type: Number},
     variant_type: [{
         size: {type: String},
         color: {type: String},
