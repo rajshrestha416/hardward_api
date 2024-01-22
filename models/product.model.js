@@ -2,9 +2,11 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const variantSchema = new Schema({
-    variant: {
-        type: String, require: true
-    },
+    sku: {type: String},
+    variant_type: [{
+        size: {type: String},
+        color: {type: String},
+    }],
     price: {
         type: Number, required: true, min: 0
     },
