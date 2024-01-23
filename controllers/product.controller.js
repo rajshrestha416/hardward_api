@@ -84,10 +84,17 @@ class ProductController {
                 is_deleted: false
             }).select("product_name category product_sku variant").skip((page - 1) * size).limit(size).sort(sort);
 
+            const totalCount = await productModel.countDocuments({
+                is_deleted: false
+            })
+
             return res.status(httpStatus.OK).json({
                 success: true,
                 msg: "Products!!",
-                data: products
+                data: products,
+                totalCount, 
+                size: parseInt(size), 
+                page: parseInt(page)
             });
         } catch (error) {
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
