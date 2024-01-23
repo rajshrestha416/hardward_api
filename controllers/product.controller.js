@@ -82,7 +82,7 @@ class ProductController {
             const { page = 1, size = 10, sort = {_id:-1} } = req.query;
             const products = await productModel.find({
                 is_deleted: false
-            }).select("product_ name category product_sku variant").skip((page - 1) * size).limit(size).sort(sort);
+            }).select("product_name category product_sku variant").skip((page - 1) * size).limit(size).sort(sort);
 
             return res.status(httpStatus.OK).json({
                 success: true,
