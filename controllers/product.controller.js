@@ -65,7 +65,7 @@ class ProductController {
 
             return res.status(httpStatus.OK).json({
                 success: true,
-                msg: "Category Added",
+                msg: "Product Added",
                 data: product
             });
         } catch (error) {

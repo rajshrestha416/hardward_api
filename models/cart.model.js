@@ -6,16 +6,28 @@ const CartSchema = new Schema({
         type: Number
     },
     user_id: {
-        type: Schema.Types.ObjectId, ref: "users"
+        type: Schema.Types.ObjectId, ref: "User"
     },
-    shipping: {
-        
+    total: {
+        type: Number, default: 0
+    },
+    shipping_address: {
+        type: String
     },
     discount: {
-        type: Number
+        type: Number, default: 0
     },
     grand_total: {
-        type: Number
+        type: Number, default: 0
+    },
+    is_active: {
+        type: Boolean, default: true
+    },
+    status: {
+        type: String, enum: [
+            "CART", "ORDER", "DELIVERED", "CANCELLED", "REMOVED" 
+        ],
+        default: "CART"
     }
 }, {
     timestamps: true

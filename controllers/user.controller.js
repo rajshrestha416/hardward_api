@@ -1,6 +1,7 @@
 const Joi = require("joi");
 const httpStatus = require("http-status");
 const userModel = require("../models/user.model");
+const cartModel = require("../models/cart.model");
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 
@@ -18,6 +19,26 @@ class UserController {
         email: Joi.string().email().required(),
         password: Joi.string().required()
     });
+
+    createCart = async (user) => {
+        try {
+            //check if active cart exists
+            const activeCart = await cartModel.findOne({
+                user_id: user._id,
+                status: "CART"
+            })
+            if(activeCart) return
+            
+            //get cart_no 
+            const result = await cartModel.findOne({}).sort({_id:-1})
+            console.log("result", result)
+            const cart_no = result ? result.cart_no + 1 : 1000;
+
+            const cart = await cartModel.create({cart_no, user_id: user._id})
+        } catch (error) {
+            throw error
+        }
+    }
 
     login = async (req, res, next) => {
         try {
@@ -54,6 +75,9 @@ class UserController {
             const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
             const { password, __v, ...data } = user;
+
+            //create cart for the user
+            await this.createCart(user)
 
             return res.status(httpStatus.OK).json({
                 success: true,
