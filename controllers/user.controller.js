@@ -144,7 +144,8 @@ class UserController {
 
     allUser = async (req, res, next) => {
         try {
-            const { page = 1, size = 10, sort } = req.query;
+            const { page = 1, size = 10, sort = 
+            {_id:-1} } = req.query;
             const users = await userModel.find({
                 is_deleted: false
             }).select("firstname lastname email contact address").skip((page - 1) * size).limit(size).sort(sort);

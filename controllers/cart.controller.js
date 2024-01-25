@@ -175,7 +175,7 @@ class OrderController {
             }
 
             //handle cart info
-            cart.total -= (cartItem.price * cartItem.quantity);
+            cart.total += (cartItem.price * cartItem.quantity);
             cart.grand_total = cart.total - cart.discount;
             await cart.save();
 
