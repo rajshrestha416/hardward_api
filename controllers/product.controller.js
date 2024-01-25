@@ -1,6 +1,7 @@
 const httpStatus = require("http-status");
 const productModel = require("../models/product.model");
 const Joi = require("joi");
+const upload = require("../middlewares/upload");
 
 class ProductController {
     // constructor(){
@@ -18,82 +19,99 @@ class ProductController {
     });
 
 
-    skuGenerator = async(productName) => {
+    skuGenerator = async (productName) => {
         const formattedName = productName.replace(/\s/g, '_'); // Replace spaces with underscores
         const randomNum = Math.floor(Math.random() * 9000) + 1000;
-        const sku = formattedName.toUpperCase() + '_' + randomNum
+        const sku = formattedName.toUpperCase() + '_' + randomNum;
 
         const checkSKU = await productModel.findOne({
             sku,
             is_deleted: false,
         });
-        if(checkSKU) await this.skuGenerator(productName)
+        if (checkSKU) await this.skuGenerator(productName);
 
         return sku;
     };
 
     addProduct = async (req, res) => {
-        try {
-            let { product_name, category, variant } = req.body;
-
-            const { error } = this.productValidationSchema.validate(req.body);
-            
-            if (error) {
-                return res.status(httpStatus.CONFLICT).json({
+        upload.any()(req, res, async err => {
+            if (err) {
+                return res.status(httpStatus.BAD_REQUEST).json({
                     success: false,
-                    msg: error.message
+                    msg: err.messages
                 });
             }
-            
-            const checkProduct = await productModel.findOne({
-                product_name,
-                is_deleted: false,
-            });
-            
-            
-            if (checkProduct) {
-                return res.status(httpStatus.CONFLICT).json({
+            try {
+                req.body.variant = JSON.parse(req.body.variant);
+                let { product_name, category, variant } = req.body;
+
+                const { error } = this.productValidationSchema.validate(req.body);
+
+                if (error) {
+                    return res.status(httpStatus.CONFLICT).json({
+                        success: false,
+                        msg: error.message
+                    });
+                }
+
+                Promise.all(req.files.map(value => {
+                    const variantIndex = variant.findIndex(ele => ele.sku === value.fieldname);
+                    if (!variantIndex) variant[variantIndex].images = [value.path];
+                }));
+
+                const checkProduct = await productModel.findOne({
+                    product_name,
+                    is_deleted: false,
+                });
+
+                if (checkProduct) {
+                    return res.status(httpStatus.CONFLICT).json({
+                        success: false,
+                        msg: "Product Already Exits!!"
+                    });
+                }
+                const product_sku = await this.skuGenerator(product_name);
+
+                const product = await productModel.create({
+                    product_name, product_sku, category, variant
+                });
+
+                return res.status(httpStatus.OK).json({
+                    success: true,
+                    msg: "Product Added",
+                    data: product
+                });
+            } catch (error) {
+                console.log("error", error);
+                return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                     success: false,
-                    msg: "Product Already Exits!!"
+                    msg: "Something Went Wrong!!"
                 });
             }
-            const product_sku = await this.skuGenerator(product_name);
 
-            const product = await productModel.create({
-                product_name, product_sku, category, variant
-            });
-
-            return res.status(httpStatus.OK).json({
-                success: true,
-                msg: "Product Added",
-                data: product
-            });
-        } catch (error) {
-            console.log("error", error);
-            return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-                success: false,
-                msg: "Something Went Wrong!!"
-            });
-        }
+        });
     };
 
     getProducts = async (req, res) => {
         try {
-            const { page = 1, size = 10, sort = {_id:-1} } = req.query;
+            const { page = 1, size = 10, sort = { _id: -1 } } = req.query;
             const products = await productModel.find({
                 is_deleted: false
-            }).select("product_name category product_sku variant").skip((page - 1) * size).limit(size).sort(sort);
+            }).select("product_name category product_sku variant").populate({
+                path: "category",
+                select: "_id name"
+            }).skip((page - 1) * size).limit(size).sort(sort);
 
             const totalCount = await productModel.countDocuments({
                 is_deleted: false
-            })
+            });
 
             return res.status(httpStatus.OK).json({
                 success: true,
                 msg: "Products!!",
                 data: products,
-                totalCount, 
-                size: parseInt(size), 
+                totalCount,
+                size: parseInt(size),
                 page: parseInt(page)
             });
         } catch (error) {
@@ -109,7 +127,10 @@ class ProductController {
             const sku = req.params.sku;
             const product = await productModel.findOne({
                 product_sku: sku
-            }).select("product_name category product_sku variant");
+            }).select("product_name category product_sku variant").populate({
+                path: "category",
+                select: "_id name"
+            });
             if (!product) {
                 return res.status(httpStatus.NOT_FOUND).json({
                     success: false,
@@ -130,36 +151,55 @@ class ProductController {
     };
 
     updateProduct = async (req, res) => {
-        try {
-            const id = req.params.id;
-
-            const product = await productModel.findById(id);
-            if (!product) {
-                return res.status(httpStatus.NOT_FOUND).json({
+        upload.any()(req, res, async err => {
+            if (err) {
+                return res.status(httpStatus.BAD_REQUEST).json({
                     success: false,
-                    msg: "Product Not Found!!"
+                    msg: err.messages
                 });
             }
 
-            if(req.body.product_name !== product.product_name){
-                req.body.product_sku = await this.skuGenerator(req.body.product_name)
-            }
+            try {
+                const id = req.params.id;
+                req.body.variant = JSON.parse(req.body.variant);
 
-            await productModel.findByIdAndUpdate(
-                id,
-                req.body,
-                { new: true }
-            );
-            return res.status(httpStatus.OK).json({
-                success: true,
-                msg: "Product Updated!!"
-            });
-        } catch (error) {
-            return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-                success: false,
-                msg: "Something Went Wrong!!"
-            });
-        }
+                const product = await productModel.findById(id);
+                if (!product) {
+                    return res.status(httpStatus.NOT_FOUND).json({
+                        success: false,
+                        msg: "Product Not Found!!"
+                    });
+                }
+
+                if (req.body.product_name !== product.product_name) {
+                    req.body.product_sku = await this.skuGenerator(req.body.product_name);
+                }
+
+                if(req.files){
+                    //change image
+                    Promise.all(req.files.map(value => {
+                        const variantIndex = req.body.variant.findIndex(ele => ele.sku === value.fieldname);
+                        if (!variantIndex) variant[variantIndex].images = [value.path];
+                    }));
+                }
+
+                await productModel.findByIdAndUpdate(
+                    id,
+                    req.body,
+                    { new: true }
+                );
+                return res.status(httpStatus.OK).json({
+                    success: true,
+                    msg: "Product Updated!!"
+                });
+            } catch (error) {
+                console.log("error", error)
+                return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                    success: false,
+                    msg: "Something Went Wrong!!"
+                });
+            }
+        });
     };
 
     deleteProduct = async (req, res) => {

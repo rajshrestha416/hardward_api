@@ -64,7 +64,7 @@ class OrderController {
                 cart: cart._id,
                 variant: _variant.sku
             });
-            console.log("checkItem", order)
+            
             if(order){
                 order.quantity += quantity
                 await order.save()
@@ -119,7 +119,10 @@ class OrderController {
             const cartItems = await cartItemModel.find({
                 cart: cart._id,
                 status: "CART"
-            }).select("item variant price quantity ");
+            }).populate({
+                path: "item",
+                select: "product_name product_sku variant"
+            }).select("item variant price quantity");
 
             return res.status(httpStatus.OK).json({
                 success: true,
@@ -140,9 +143,9 @@ class OrderController {
 
     removeItems = async (req, res) => {
         try {
-            const { item } = req.body.item;
+            const { cartitem, quantity } = req.body.item;
             const cartItem = await cartItemModel.findOne({
-                item: item,
+                _id: cartitem,
                 status: "CART",
                 is_active: true
             });
@@ -152,10 +155,14 @@ class OrderController {
                     msg: "Item Not Found!!"
                 });
             }
-
-            cartItem.status = "REMOVED";
+            cartItem.quantity += quantity
+            console.log("quantity", quantity)
+            if(cartItem.quantity === 0){
+                cartItem.status = "REMOVED";
+            }
+            
             await cartItem.save();
-
+            
             //update Cart
             const cart = await cartModel.findOne({
                 _id: cartItem.cart
@@ -175,7 +182,7 @@ class OrderController {
             //manage stock 
             await productModel.updateOne({ _id: item, "variant.sku": cartItem.variant }, {
                 $inc: {
-                    "variant.$.stock": cartItem.quantity
+                    "variant.$.stock": quantity
                 }
             });
 
@@ -222,6 +229,14 @@ class OrderController {
             });
         }
     };
+
+    // cartStatusChange = async (req, res) => {
+    //     try {
+            
+    //     } catch (error) {
+            
+    //     }
+    // }
 }
 
 module.exports = OrderController;

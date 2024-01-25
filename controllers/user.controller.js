@@ -243,17 +243,19 @@ class UserController {
                 });
             }
             try {
+                console.log("req.file", req.file)
                 await userModel.findByIdAndUpdate(req.user._id, {
-                    image: req.file.path   
+                    image: req.file ? req.file.path : ''   
                 })
                 return res.status(httpStatus.OK).json({
                     success: true,
                     msg: "Profile Image Updated!!",
                     data: {
-                        image: req.file.path
+                        image: req.file ? req.file.path : '' 
                     }
                 });
             } catch (error) {
+                console.log("error", error)
                 return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                     success: false,
                     msg: "Something Went Wrong!!"
