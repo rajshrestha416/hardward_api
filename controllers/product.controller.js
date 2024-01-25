@@ -56,7 +56,7 @@ class ProductController {
 
                 Promise.all(req.files.map(value => {
                     const variantIndex = variant.findIndex(ele => ele.sku === value.fieldname);
-                    if (!variantIndex) variant[variantIndex].images = [value.path];
+                    if (variantIndex >= 0) variant[variantIndex].images = [value.path];
                 }));
 
                 const checkProduct = await productModel.findOne({
@@ -179,7 +179,8 @@ class ProductController {
                     //change image
                     Promise.all(req.files.map(value => {
                         const variantIndex = req.body.variant.findIndex(ele => ele.sku === value.fieldname);
-                        if (!variantIndex) variant[variantIndex].images = [value.path];
+                        console.log(variantIndex, req.body.variant )
+                        if (variantIndex >= 0) req.body.variant[variantIndex].images = [value.path];
                     }));
                 }
 
