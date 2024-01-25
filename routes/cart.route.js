@@ -10,7 +10,7 @@ router.get('/my-cart', verifyUser, cartController.getMyCart)
 
 router.put('/checkout/:cart_id', verifyUser, cartController.checkout)
 
-router.put('/remove-item/:item', verifyUser, cartController.removeItems)
+router.put('/remove-item', verifyUser, cartController.removeItems)
 
 
 module.exports = router

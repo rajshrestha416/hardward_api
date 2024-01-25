@@ -14,6 +14,8 @@ router.get('/my-profile', verifyUser, userController.myProfile)
 
 router.put('/update-profile/:id', userController.updateProfile)
 
+router.put('/upload-pp', verifyUser, userController.uploadPP)
+
 router.delete('/delete-user/:id', userController.deleteUser)
 
 

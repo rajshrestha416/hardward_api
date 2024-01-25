@@ -17,7 +17,7 @@ const userSchema = new Schema(
                 "super-admin"
             ]
         },
-        // is_active: { type: boolean, default: true },
+        image: {type: String},
         is_deleted: { type: Boolean, default: false },
     },
     { timestamps: true }

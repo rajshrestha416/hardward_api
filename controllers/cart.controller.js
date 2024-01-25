@@ -4,7 +4,7 @@ const Joi = require("joi");
 const cartItemModel = require("../models/cartItem.model");
 const cartModel = require("../models/cart.model");
 const UserController = require("../controllers/user.controller");
-const userController = new UserController()
+const userController = new UserController();
 
 class OrderController {
     // constructor(){
@@ -35,24 +35,23 @@ class OrderController {
                 "variant.sku": variant
             });
 
-            console.log("chec", checkProduct)
             if (!checkProduct) {
                 return res.status(httpStatus.CONFLICT).json({
                     success: false,
                     msg: "Product Doesn't Exists!!"
                 });
             }
-            
+
             const _variant = checkProduct.variant.find(ele => ele.sku === variant);
-            _variant.stock -= quantity
             
-            console.log("_variant", _variant)
+            console.log("_variant", _variant);
             if (_variant.stock < quantity) {
                 return res.status(httpStatus.BAD_REQUEST).json({
                     success: false,
                     msg: "Out of Stock!!"
                 });
             }
+            _variant.stock -= quantity;
 
             //get my cart
             const cart = await cartModel.findOne({
@@ -60,23 +59,34 @@ class OrderController {
                 status: "CART"
             });
 
-            const order = await cartItemModel.create({
-                item, variant, quantity, price: _variant.price, cart: cart._id
+            //check if item exist in cart
+            let order = await cartItemModel.findOne({
+                cart: cart._id,
+                variant: _variant.sku
             });
-
-            if (!order) {
-                return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-                    success: false,
-                    msg: "Something Went Wrong!!"
+            console.log("checkItem", order)
+            if(order){
+                order.quantity += quantity
+                await order.save()
+            }else{
+                order = await cartItemModel.create({
+                    item, variant, quantity, price: _variant.price, cart: cart._id
                 });
+                
+                if (!order) {
+                    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                        success: false,
+                        msg: "Something Went Wrong!!"
+                    });
+                }
             }
-            
+
             //handle cart info
             cart.total += (_variant.price * quantity);
-            cart.grand_total = cart.total - cart.discount
-            await cart.save()
-            await _variant.save()
-            await checkProduct.save()
+            cart.grand_total = cart.total - cart.discount;
+            await cart.save();
+            await _variant.save();
+            await checkProduct.save();
 
             return res.status(httpStatus.OK).json({
                 success: true,
@@ -87,6 +97,7 @@ class OrderController {
                 }
             });
         } catch (error) {
+            console.log("error", error)
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,
                 msg: "Something Went Wrong!!"
@@ -103,12 +114,12 @@ class OrderController {
             }).select("_id cart_no user_id total discount grand_total status").populate({
                 path: "user_id",
                 select: "firstname lastname email contact address "
-            })
+            });
 
             const cartItems = await cartItemModel.find({
                 cart: cart._id,
                 status: "CART"
-            })
+            }).select("item variant price quantity ");
 
             return res.status(httpStatus.OK).json({
                 success: true,
@@ -119,7 +130,7 @@ class OrderController {
                 }
             });
         } catch (error) {
-            console.log("err", error)
+            console.log("err", error);
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,
                 msg: "Something Went Wrong!!"
@@ -129,7 +140,7 @@ class OrderController {
 
     removeItems = async (req, res) => {
         try {
-            const item = req.params.item;
+            const { item } = req.body.item;
             const cartItem = await cartItemModel.findOne({
                 item: item,
                 status: "CART",
@@ -142,8 +153,8 @@ class OrderController {
                 });
             }
 
-            cartItem.status = "REMOVED"
-            await cartItem.save()
+            cartItem.status = "REMOVED";
+            await cartItem.save();
 
             //update Cart
             const cart = await cartModel.findOne({
@@ -158,15 +169,15 @@ class OrderController {
 
             //handle cart info
             cart.total -= (cartItem.price * cartItem.quantity);
-            cart.grand_total = cart.total - cart.discount
-            await cart.save()
+            cart.grand_total = cart.total - cart.discount;
+            await cart.save();
 
             //manage stock 
-            await productModel.updateOne({_id:item, "variant.sku": cartItem.variant},{
+            await productModel.updateOne({ _id: item, "variant.sku": cartItem.variant }, {
                 $inc: {
                     "variant.$.stock": cartItem.quantity
                 }
-            })
+            });
 
             return res.status(httpStatus.OK).json({
                 success: true,
@@ -182,23 +193,23 @@ class OrderController {
 
     checkout = async (req, res) => {
         try {
-            const {cart_id} = req.params
+            const { cart_id } = req.params;
 
             //Update CartItem Status
             const cartItems = await cartItemModel.updateMany({
                 cart: cart_id
             },
-            {
-                status: "ORDER"
-            })
+                {
+                    status: "ORDER"
+                });
 
             //Update Cart Status
-            const cart = await cartModel.findOneAndUpdate({_id: cart_id}, {
+            const cart = await cartModel.findOneAndUpdate({ _id: cart_id }, {
                 status: "ORDER"
-            })
+            });
 
             //create 
-            await userController.createCart(cart.user_id)
+            await userController.createCart(cart.user_id);
 
             return res.status(httpStatus.OK).json({
                 success: true,
@@ -210,7 +221,7 @@ class OrderController {
                 msg: "Something Went Wrong!!"
             });
         }
-    }
+    };
 }
 
 module.exports = OrderController;

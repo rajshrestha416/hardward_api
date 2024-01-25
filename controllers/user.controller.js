@@ -4,6 +4,7 @@ const userModel = require("../models/user.model");
 const cartModel = require("../models/cart.model");
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
+const upload = require("../middlewares/upload");
 
 class UserController {
     userValidationSchema = Joi.object({
@@ -26,19 +27,19 @@ class UserController {
             const activeCart = await cartModel.findOne({
                 user_id: user._id,
                 status: "CART"
-            })
-            if(activeCart) return
-            
+            });
+            if (activeCart) return;
+
             //get cart_no 
-            const result = await cartModel.findOne({}).sort({_id:-1})
-            console.log("result", result)
+            const result = await cartModel.findOne({}).sort({ _id: -1 });
+            console.log("result", result);
             const cart_no = result ? result.cart_no + 1 : 1000;
 
-            const cart = await cartModel.create({cart_no, user_id: user._id})
+            const cart = await cartModel.create({ cart_no, user_id: user._id });
         } catch (error) {
-            throw error
+            throw error;
         }
-    }
+    };
 
     login = async (req, res, next) => {
         try {
@@ -77,7 +78,7 @@ class UserController {
             const { password, __v, ...data } = user;
 
             //create cart for the user
-            await this.createCart(user)
+            await this.createCart(user);
 
             return res.status(httpStatus.OK).json({
                 success: true,
@@ -143,15 +144,15 @@ class UserController {
 
     allUser = async (req, res, next) => {
         try {
-            const {page=1, size=10, sort} = req.query
+            const { page = 1, size = 10, sort } = req.query;
             const users = await userModel.find({
                 is_deleted: false
-            }).select("firstname lastname email contact address").skip((page-1) * size).limit(size).sort(sort)
+            }).select("firstname lastname email contact address").skip((page - 1) * size).limit(size).sort(sort);
 
             return res.status(httpStatus.OK).json({
                 success: true,
                 msg: "Users!!",
-                data : users
+                data: users
             });
 
         } catch (error) {
@@ -164,11 +165,11 @@ class UserController {
 
     myProfile = async (req, res, next) => {
         try {
-            const {password, role, is_deleted, createdAt, updatedAt, __v, ...data} = req.user
+            const { password, role, is_deleted, createdAt, updatedAt, __v, ...data } = req.user;
             return res.status(httpStatus.OK).json({
                 success: true,
                 msg: "User!!",
-                data : data
+                data: data
             });
         } catch (error) {
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
@@ -176,12 +177,12 @@ class UserController {
                 msg: "Something Went Wrong!!"
             });
         }
-    }
+    };
 
     updateProfile = async (req, res, next) => {
         try {
-            const id = req.params.id
-            const user = await userModel.findById(id)
+            const id = req.params.id;
+            const user = await userModel.findById(id);
             if (!user) {
                 return res.status(httpStatus.NOT_FOUND).json({
                     success: false,
@@ -192,8 +193,8 @@ class UserController {
             await userModel.findByIdAndUpdate(
                 id,
                 req.body,
-                {new: true}
-            )
+                { new: true }
+            );
 
             return res.status(httpStatus.OK).json({
                 success: true,
@@ -205,12 +206,12 @@ class UserController {
                 msg: "Something Went Wrong!!"
             });
         }
-    }
+    };
 
     deleteUser = async (req, res, next) => {
         try {
-            const id = req.params.id
-            const user = await userModel.findById(id)
+            const id = req.params.id;
+            const user = await userModel.findById(id);
             if (!user) {
                 return res.status(httpStatus.NOT_FOUND).json({
                     success: false,
@@ -218,8 +219,8 @@ class UserController {
                 });
             }
 
-            user.is_deleted = true
-            await user.save()
+            user.is_deleted = true;
+            await user.save();
 
             return res.status(httpStatus.OK).json({
                 success: true,
@@ -231,8 +232,35 @@ class UserController {
                 msg: "Something Went Wrong!!"
             });
         }
-    }
-    
+    };
+
+    uploadPP = async (req, res) => {
+        upload.single('image')(req, res, async error => {
+            if (error) {
+                return res.status(httpStatus.BAD_REQUEST).json({
+                    success: false,
+                    msg: error.message
+                });
+            }
+            try {
+                await userModel.findByIdAndUpdate(req.user._id, {
+                    image: req.file.path   
+                })
+                return res.status(httpStatus.OK).json({
+                    success: true,
+                    msg: "Profile Image Updated!!",
+                    data: {
+                        image: req.file.path
+                    }
+                });
+            } catch (error) {
+                return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                    success: false,
+                    msg: "Something Went Wrong!!"
+                });
+            }
+        });
+    };
 }
 
 module.exports = UserController;

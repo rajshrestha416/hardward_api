@@ -1,8 +1,7 @@
 const express = require('express');
-// const http = require('http');
 require('dotenv').config();
 const cors = require('cors');
-// const path = require('path');
+const path = require('path');
 const connectDB = require('./configs/db.config');
 const app = express();
 connectDB();
@@ -32,7 +31,7 @@ app.use(
 );
 
 // Serve static files
-// app.use(static(join(__dirname, './public')));
+app.use(express.static(path.join(__dirname, '/')));
 
 // Define a default route to check if the server is connected
 app.get('/', (req, res) => {
