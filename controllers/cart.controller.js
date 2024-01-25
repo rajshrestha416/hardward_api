@@ -202,6 +202,15 @@ class OrderController {
         try {
             const { cart_id } = req.params;
 
+            const shipping_address = req.body.shipping_address
+            
+            if(!shipping_address && shipping_address !== ""){
+                return res.status(httpStatus.BAD_REQUEST).json({
+                    success: false,
+                    msg: "Please Add Shipping Address!!"
+                });
+            }
+
             //Update CartItem Status
             const cartItems = await cartItemModel.updateMany({
                 cart: cart_id
