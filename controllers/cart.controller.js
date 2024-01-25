@@ -143,7 +143,7 @@ class OrderController {
 
     removeItems = async (req, res) => {
         try {
-            const { cartitem, quantity } = req.body.item;
+            const { cartitem, quantity } = req.body;
             const cartItem = await cartItemModel.findOne({
                 _id: cartitem,
                 status: "CART",
@@ -180,7 +180,7 @@ class OrderController {
             await cart.save();
 
             //manage stock 
-            await productModel.updateOne({ _id: item, "variant.sku": cartItem.variant }, {
+            await productModel.updateOne({ _id: cartItem.item, "variant.sku": cartItem.variant }, {
                 $inc: {
                     "variant.$.stock": quantity
                 }
