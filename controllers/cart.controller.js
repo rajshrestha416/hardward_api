@@ -62,7 +62,8 @@ class OrderController {
             //check if item exist in cart
             let order = await cartItemModel.findOne({
                 cart: cart._id,
-                variant: _variant.sku
+                variant: _variant.sku,
+                status: "CART"
             });
             
             if(order){

@@ -1,18 +1,12 @@
-const CategoryController = require("../controllers/category.controller");
+const WishListContrller = require("../controllers/wishlist.controller");
 const { verifyUser } = require("../middlewares/auth.middlerware");
 
 const router = require("express").Router()
-const categoryController = new CategoryController()
+const wishListContrller = new WishListContrller()
 
-router.post('/:product', verifyUser, categoryController.addCategory)
+router.post('/:product', verifyUser, wishListContrller.addRemoveWishList)
 
-router.get('/', verifyUser, categoryController.getCategories)
-
-// router.get('/:id', verifyUser, categoryController.getCategory)
-
-router.put('/:id', verifyUser, categoryController.updateCategory)
-
-router.delete('/:id', verifyUser, categoryController.deleteCategory)
+router.get('/', verifyUser, wishListContrller.getWishList)
 
 
 module.exports = router
