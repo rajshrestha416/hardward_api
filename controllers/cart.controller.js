@@ -44,7 +44,6 @@ class OrderController {
 
             const _variant = checkProduct.variant.find(ele => ele.sku === variant);
             
-            console.log("_variant", _variant);
             if (_variant.stock < quantity) {
                 return res.status(httpStatus.BAD_REQUEST).json({
                     success: false,
@@ -176,7 +175,7 @@ class OrderController {
             }
 
             //handle cart info
-            cart.total += (cartItem.price * cartItem.quantity);
+            cart.total += (cartItem.price * quantity);
             cart.grand_total = cart.total - cart.discount;
             await cart.save();
 
