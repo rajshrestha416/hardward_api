@@ -33,7 +33,6 @@ const verifyUser = async (req, res, next) => {
   if (decodedResult == null || decodedResult == undefined)
     return handleUnauthorizedAccess(res);
 
-  console.log('user', decodedResult.userId);
   let userData = await getUser(decodedResult.userId);
   if (userData == null) return handleUnauthorizedAccess(res);
   req.user = userData;
@@ -41,7 +40,8 @@ const verifyUser = async (req, res, next) => {
 };
 
 const verifyAuthorization = (req, res, next) => {
-  if (req.user.role === 'admin') {
+  const role = req.user.role
+  if (role.includes('admin') || role.includes('super-admin')) {
     next();
   }
   return res

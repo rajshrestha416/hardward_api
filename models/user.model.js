@@ -14,7 +14,7 @@ const userSchema = new Schema(
             type: [String], default: "user", enum: [
                 "user",
                 "admin",
-                // "super-admin"
+                "super-admin"
             ]
         },
         image: {type: String},

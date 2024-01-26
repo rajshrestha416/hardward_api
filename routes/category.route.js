@@ -1,5 +1,5 @@
 const CategoryController = require("../controllers/category.controller");
-const { verifyUser } = require("../middlewares/auth.middlerware");
+const { verifyUser, verifyAuthorization } = require("../middlewares/auth.middlerware");
 
 const router = require("express").Router()
 const categoryController = new CategoryController()

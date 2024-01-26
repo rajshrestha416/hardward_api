@@ -156,7 +156,7 @@ class OrderController {
                 });
             }
             cartItem.quantity += quantity
-            console.log("quantity", quantity)
+            
             if(cartItem.quantity === 0){
                 cartItem.status = "REMOVED";
             }
