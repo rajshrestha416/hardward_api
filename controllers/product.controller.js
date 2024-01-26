@@ -95,7 +95,7 @@ class ProductController {
     getProducts = async (req, res) => {
         try {
             const { page = 1, size = 10, sort = { _id: -1 } } = req.query;
-            const searchQuery = await 
+            // const searchQuery = await 
             const products = await productModel.find({
                 is_deleted: false
             }).select("product_name description category product_sku variant").populate({
