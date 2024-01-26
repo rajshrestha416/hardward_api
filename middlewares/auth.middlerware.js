@@ -43,10 +43,9 @@ const verifyAuthorization = (req, res, next) => {
   const role = req.user.role
   if (role.includes('admin') || role.includes('super-admin')) {
     next();
+  }else{
+    return handleUnauthorizedAccess(res);
   }
-  return res
-    .status(httpStatus.UNAUTHORIZED)
-    .json({ success: false, message: 'Unauthorized access' });
 };
 
 module.exports = { verifyUser, verifyAuthorization };

@@ -94,11 +94,32 @@ class ProductController {
 
     getProducts = async (req, res) => {
         try {
-            const { page = 1, size = 10, sort = { _id: -1 } } = req.query;
-            // const searchQuery = await 
-            const products = await productModel.find({
+            let { page = 1, size = 10, sort = { _id: -1 } } = req.query;
+            let searchQuery = {
                 is_deleted: false
-            }).select("product_name description category product_sku variant").populate({
+            };
+
+            if(req.query.category){
+                searchQuery = {
+                    ...searchQuery,
+                    category: req.query.category
+                };
+            }
+            
+            if(req.query.price){
+                sort = {
+                    ...searchQuery,
+                    category: req.query.category
+                };
+            }
+
+            if (req.query.search) {
+                searchQuery = {
+                    ...searchQuery,
+                    product_name: { $regex: req.query.search, $options: 'i' }
+                };
+            }
+            const products = await productModel.find().select("product_name description category product_sku variant").populate({
                 path: "category",
                 select: "_id name"
             }).skip((page - 1) * size).limit(size).sort(sort);
@@ -176,11 +197,11 @@ class ProductController {
                     req.body.product_sku = await this.skuGenerator(req.body.product_name);
                 }
 
-                if(req.files){
+                if (req.files) {
                     //change image
                     Promise.all(req.files.map(value => {
                         const variantIndex = req.body.variant.findIndex(ele => ele.sku === value.fieldname);
-                        console.log(variantIndex, req.body.variant )
+                        console.log(variantIndex, req.body.variant);
                         if (variantIndex >= 0) req.body.variant[variantIndex].images = [value.path];
                     }));
                 }
@@ -195,7 +216,7 @@ class ProductController {
                     msg: "Product Updated!!"
                 });
             } catch (error) {
-                console.log("error", error)
+                console.log("error", error);
                 return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                     success: false,
                     msg: "Something Went Wrong!!"
