@@ -102,10 +102,18 @@ class CategoryController {
                 is_deleted: false
             }).select("name order createdAt").skip((page-1) * size).limit(size).sort(sort)
 
+            const totalCount = await categoryModel.countDocuments({
+                is_active: true,
+                is_deleted: false
+            })
+
             return res.status(httpStatus.OK).json({
                 success: true,
                 msg: "Categories!!",
-                data : categories
+                data : categories,
+                page,
+                size,
+                totalCount
             });
         } catch (error) {
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
