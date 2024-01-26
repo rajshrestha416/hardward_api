@@ -94,6 +94,7 @@ class ProductController {
 
     getProducts = async (req, res) => {
         try {
+
             let { page = 1, size = 10, sort = { _id: -1 } } = req.query;
             let searchQuery = {
                 is_deleted: false
@@ -106,10 +107,18 @@ class ProductController {
                 };
             }
             
-            if(req.query.price){
+            if(req.query.date){
                 sort = {
-                    ...searchQuery,
-                    category: req.query.category
+                    ...sort,
+                    '_id': date
+                };
+            }
+
+            if(req.query.price){
+                console.log("price", req.query.price)
+                sort = {
+                    // ...sort,
+                    'variant.0.price': parseInt(req.query.price)
                 };
             }
 
@@ -119,7 +128,8 @@ class ProductController {
                     product_name: { $regex: req.query.search, $options: 'i' }
                 };
             }
-            const products = await productModel.find().select("product_name description category product_sku variant").populate({
+            console.log("sort", sort)
+            const products = await productModel.find(searchQuery).select("product_name description category product_sku variant").populate({
                 path: "category",
                 select: "_id name"
             }).skip((page - 1) * size).limit(size).sort(sort);
@@ -137,6 +147,7 @@ class ProductController {
                 page: parseInt(page)
             });
         } catch (error) {
+            console.log("err", error)
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,
                 msg: "Something Went Wrong!!"

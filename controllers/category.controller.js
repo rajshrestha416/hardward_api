@@ -89,10 +89,18 @@ class CategoryController {
     getCategories = async (req, res) => {
         try {
             const {page=1, size=10, sort = {_id:-1}} = req.query
+
+            if (req.query.search) {
+                searchQuery = {
+                    ...searchQuery,
+                    name: { $regex: req.query.search, $options: 'i' }
+                };
+            }
+
             const categories = await categoryModel.find({
                 is_active: true,
                 is_deleted: false
-            }).select("name order").skip((page-1) * size).limit(size).sort(sort)
+            }).select("name order createdAt").skip((page-1) * size).limit(size).sort(sort)
 
             return res.status(httpStatus.OK).json({
                 success: true,
@@ -110,7 +118,7 @@ class CategoryController {
     getCategory = async (req, res) => {
         try {
             const id = req.params.id
-            const category = await categoryModel.findById(id).select("name order")
+            const category = await categoryModel.findById(id).select("name order createdAt")
             if(!category){
                 return res.status(httpStatus.NOT_FOUND).json({
                     success: false,
