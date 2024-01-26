@@ -228,6 +228,9 @@ class ProductController {
             });
         }
     };
+
+    // search = (req, res)
+
 }
 
 module.exports = ProductController;

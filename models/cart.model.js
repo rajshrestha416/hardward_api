@@ -25,7 +25,7 @@ const CartSchema = new Schema({
     },
     status: {
         type: String, enum: [
-            "CART", "ORDER", "DELIVERED", "CANCELLED", "REMOVED" 
+            "CART", "ORDER", "COMPLETED" 
         ],
         default: "CART"
     }

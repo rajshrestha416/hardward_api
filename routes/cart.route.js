@@ -12,5 +12,7 @@ router.put('/checkout/:cart_id', verifyUser, cartController.checkout)
 
 router.put('/add-remove-item', verifyUser, cartController.removeItems)
 
+router.put('/update-status', verifyUser, verifyAuthorization, cartController.updateStatus)
+
 
 module.exports = router

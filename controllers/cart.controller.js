@@ -239,13 +239,48 @@ class OrderController {
         }
     };
 
-    // cartStatusChange = async (req, res) => {
-    //     try {
+    cartStatusChange = async (req, res) => {
+        try {
+            const {cartItem, status} = req.body
+
+            //FIND CART
+            const checkCartItem = await cartItemModel.findOne({
+                _id: cartItem
+            })
             
-    //     } catch (error) {
-            
-    //     }
-    // }
+            if(!checkCartItem){
+                return res.status(httpStatus.NOT_FOUND).json({
+                    success: false,
+                    msg: "Cart Item not found."
+                })
+            }
+
+
+            checkCartItem.status = status
+            await checkCartItem.save()
+
+            //check if cartitems left in cart to resolve the Cart status
+            const checkItemsLeft = cartItemModel.find({
+                cart: checkCartItem.cart,
+                status: {$nin: ["CART", "REMOVED", "DELIVERED", "CANCELLED"]}
+            })
+
+            if(!checkItemsLeft){
+                await cartModel.findByIdAndUpdate(checkCartItem.cart, {status: "COMPLETED"})
+            }
+
+            return res.status(httpStatus.NOT_FOUND).json({
+                success: false,
+                msg: "Cart Item not found."
+            })
+
+        } catch (error) {
+            return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                msg: "Something Went Wrong!!"
+            });
+        }
+    }
 }
 
 module.exports = OrderController;
