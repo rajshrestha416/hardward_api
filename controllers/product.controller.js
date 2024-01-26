@@ -43,7 +43,7 @@ class ProductController {
             }
             try {
                 req.body.variant = JSON.parse(req.body.variant);
-                let { product_name, category, variant } = req.body;
+                let { product_name, description, category, variant } = req.body;
 
                 const { error } = this.productValidationSchema.validate(req.body);
 
@@ -73,7 +73,7 @@ class ProductController {
                 const product_sku = await this.skuGenerator(product_name);
 
                 const product = await productModel.create({
-                    product_name, product_sku, category, variant
+                    product_name, product_sku, description, category, variant
                 });
 
                 return res.status(httpStatus.OK).json({
@@ -95,9 +95,10 @@ class ProductController {
     getProducts = async (req, res) => {
         try {
             const { page = 1, size = 10, sort = { _id: -1 } } = req.query;
+            const searchQuery = await 
             const products = await productModel.find({
                 is_deleted: false
-            }).select("product_name category product_sku variant").populate({
+            }).select("product_name description category product_sku variant").populate({
                 path: "category",
                 select: "_id name"
             }).skip((page - 1) * size).limit(size).sort(sort);
@@ -127,7 +128,7 @@ class ProductController {
             const sku = req.params.sku;
             const product = await productModel.findOne({
                 product_sku: sku
-            }).select("product_name category product_sku variant").populate({
+            }).select("product_name description category product_sku variant").populate({
                 path: "category",
                 select: "_id name"
             });
