@@ -271,6 +271,7 @@ class ProductController {
                 msg: "Product Deleted!!"
             });
         } catch (error) {
+            console.log(error)
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,
                 msg: "Something Went Wrong!!"

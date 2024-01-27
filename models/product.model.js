@@ -21,7 +21,7 @@ const ProductSchema = new Schema({
     product_sku: { type: String, required: true, unique: true },
     // variant: [variantSchema],
     price: {
-        type: Number, required: true, min: 0
+        type: Number, min: 0
     },
     stock: {type: Number, default: 0},
     images: [{ type: String }],
