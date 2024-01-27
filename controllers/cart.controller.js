@@ -69,7 +69,7 @@ class OrderController {
                 await order.save();
             } else {
                 order = await cartItemModel.create({
-                    item, variant, quantity, price: _variant.price, cart: cart._id
+                    item, quantity, price: checkProduct.price, cart: cart._id
                 });
 
                 if (!order) {
@@ -81,7 +81,7 @@ class OrderController {
             }
 
             //handle cart info
-            cart.total += (_variant.price * quantity);
+            cart.total += (checkProduct.price * quantity);
             cart.grand_total = cart.total - cart.discount;
             await cart.save();
             await checkProduct.save();
@@ -286,6 +286,8 @@ class OrderController {
                 { _id: -1 } } = req.query;
             //my carts
             const carts = await cartModel.distinct('_id', { user_id: req.user._id });
+
+            console.log("carts", carts)
 
             //my orders
             const orders = await cartItemModel.find({
