@@ -146,9 +146,23 @@ class UserController {
         try {
             const { page = 1, size = 10, sort = 
             {_id:-1} } = req.query;
-            const users = await userModel.find({
+
+            let searchQuery = {
                 is_deleted: false
-            }).select("firstname lastname email contact address").skip((page - 1) * size).limit(size).sort(sort);
+            };
+
+            if (req.query.search) {
+                searchQuery = {
+                    ...searchQuery,
+                    $or: [{
+                        firstname: { $regex: req.query.search, $options: 'i' }
+                    },{
+                        lastname: { $regex: req.query.search, $options: 'i' }
+                    }]
+                };
+            }
+
+            const users = await userModel.find(searchQuery).select("firstname lastname email contact address").skip((page - 1) * size).limit(size).sort(sort);
 
             const totalCount = await userModel.countDocuments({is_deleted: false})
             return res.status(httpStatus.OK).json({
