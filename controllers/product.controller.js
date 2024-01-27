@@ -116,7 +116,7 @@ class ProductController {
             if(req.query.date){
                 sort = {
                     ...sort,
-                    '_id': date
+                    '_id': parseInt(req.query.date)
                 };
             }
 
