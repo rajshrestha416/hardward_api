@@ -30,7 +30,7 @@ const OrderSchema = new Schema({
         type: Boolean, default: true
     },
     cart: {
-        type: Schema.Types.ObjectId, ref: "carts"
+        type: Schema.Types.ObjectId, ref: "Cart"
     }
 }, {
     timestamps: true

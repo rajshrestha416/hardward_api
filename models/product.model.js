@@ -19,7 +19,11 @@ const ProductSchema = new Schema({
     description: {type: String},
     category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
     product_sku: { type: String, required: true, unique: true },
-    variant: [variantSchema],
+    // variant: [variantSchema],
+    price: {
+        type: Number, required: true, min: 0
+    },
+    images: [{ type: String }],
     is_deleted: { type: Boolean, default: false },
 }, {
     timestamps: true

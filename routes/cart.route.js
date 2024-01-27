@@ -8,6 +8,8 @@ router.post('/add', verifyUser, cartController.addToCart)
 
 router.get('/my-cart', verifyUser, cartController.getMyCart)
 
+router.get('my-order', verifyUser, cartController.myOrder)
+
 router.put('/checkout/:cart_id', verifyUser, cartController.checkout)
 
 router.put('/add-remove-item', verifyUser, cartController.removeItems)
