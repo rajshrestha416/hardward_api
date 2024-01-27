@@ -10,6 +10,7 @@ class ProductController {
     productValidationSchema = Joi.object({
         product_name: Joi.string().required(),
         category: Joi.string().required(),
+        description: Joi.string().required(),
         variant: Joi.array().items({
             sku: Joi.string().required(),
             stock: Joi.number().required(),
