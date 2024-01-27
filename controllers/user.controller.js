@@ -150,10 +150,14 @@ class UserController {
                 is_deleted: false
             }).select("firstname lastname email contact address").skip((page - 1) * size).limit(size).sort(sort);
 
+            const totalCount = await userModel.countDocuments({is_deleted: false})
             return res.status(httpStatus.OK).json({
                 success: true,
                 msg: "Users!!",
-                data: users
+                data: users,
+                page,
+                size,
+                totalCount
             });
 
         } catch (error) {
