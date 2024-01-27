@@ -6,9 +6,10 @@ const cartController = new CartController()
 
 router.post('/add', verifyUser, cartController.addToCart)
 
-router.get('/my-cart', verifyUser, cartController.getMyCart)
 
-router.get('my-order', verifyUser, cartController.myOrder)
+router.get('/my-order', verifyUser, cartController.myOrder)
+
+router.get('/my-cart', verifyUser, cartController.getMyCart)
 
 router.put('/checkout/:cart_id', verifyUser, cartController.checkout)
 

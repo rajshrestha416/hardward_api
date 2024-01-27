@@ -23,6 +23,7 @@ const ProductSchema = new Schema({
     price: {
         type: Number, required: true, min: 0
     },
+    stock: {type: Number, default: 0},
     images: [{ type: String }],
     is_deleted: { type: Boolean, default: false },
 }, {

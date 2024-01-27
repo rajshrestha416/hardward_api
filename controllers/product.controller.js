@@ -18,6 +18,7 @@ class ProductController {
         //     variant_type: Joi.array()
         // })
         price: Joi.number().min(10),
+        stock: Joi.number()
     });
 
 
@@ -44,7 +45,7 @@ class ProductController {
                 });
             }
             try {
-                const { product_name, description, category, price } = req.body;
+                const { product_name, description, category, price, stock } = req.body;
 
                 //add path image
                 const images = await Promise.all(req.files.map(value => value.path))
@@ -78,7 +79,7 @@ class ProductController {
                 const product_sku = await this.skuGenerator(product_name);
 
                 const product = await productModel.create({
-                    product_name, product_sku, description, category, price, images
+                    product_name, product_sku, description, category, price, images, stock
                 });
 
                 return res.status(httpStatus.OK).json({
@@ -134,7 +135,7 @@ class ProductController {
                 };
             }
             console.log("sort", sort)
-            const products = await productModel.find(searchQuery).select("product_name description category product_sku price images").populate({
+            const products = await productModel.find(searchQuery).select("product_name description category product_sku price images stock").populate({
                 path: "category",
                 select: "_id name"
             }).skip((page - 1) * size).limit(size).sort(sort);
@@ -165,7 +166,7 @@ class ProductController {
             const sku = req.params.sku;
             const product = await productModel.findOne({
                 product_sku: sku
-            }).select("product_name description category product_sku price images").populate({
+            }).select("product_name description category product_sku price images stock").populate({
                 path: "category",
                 select: "_id name"
             });
