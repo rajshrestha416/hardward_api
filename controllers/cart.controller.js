@@ -292,7 +292,7 @@ class OrderController {
             //my orders
             const orders = await cartItemModel.find({
                 cart: { $in: carts },
-                status: { $ne: "CART" }
+                status: { $nin: ["CART", "REMOVED"] }
             }).populate({
                 path: "item",
                 select: "product_name description category product_sku price images"
@@ -312,6 +312,10 @@ class OrderController {
             });
         }
     };
+
+    getOrders = async (req, res) => {
+
+    }
 }
 
 module.exports = OrderController;
