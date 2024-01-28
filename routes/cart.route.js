@@ -14,7 +14,7 @@ router.put('/checkout/:cart_id', verifyUser, cartController.checkout)
 
 router.put('/add-remove-item', verifyUser, cartController.removeItems)
 
-// router.get('/admin/order', verifyUser, cartController.getOrders)
+router.get('/admin/order', verifyUser, cartController.getOrders)
 
 router.put('/change-status', verifyUser, verifyAuthorization, cartController.cartStatusChange)
 

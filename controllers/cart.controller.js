@@ -305,7 +305,6 @@ class OrderController {
             });
 
         } catch (error) {
-            console.log("error", error)
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,
                 msg: "Something Went Wrong!!"
@@ -314,7 +313,36 @@ class OrderController {
     };
 
     getOrders = async (req, res) => {
+        try {
+            const { page = 1, size = 10, sort =
+                { _id: -1 } } = req.query;
 
+            const searchQuery = {
+                    status: {$nin: ["CART", "REMOVED"]}
+            }
+
+            const orders = await cartItemModel.find().populate({
+                path: "cart",
+                select: "cart_no user_id total discount grand_total",
+                populate: {
+                    path: "user_id",
+                    select: "firstname lastname email contact"
+                }
+            }).skip((page - 1) * size).limit(size);
+
+
+            return res.status(httpStatus.OK).json({
+                success: true,
+                msg: "Orders",
+                data: orders
+            });
+        } catch (error) {
+            console.log("error", error)
+            return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                msg: "Something Went Wrong!!"
+            });
+        }
     }
 }
 
