@@ -4,6 +4,7 @@ const Joi = require("joi");
 const cartItemModel = require("../models/cartItem.model");
 const cartModel = require("../models/cart.model");
 const UserController = require("../controllers/user.controller");
+const userModel = require("../models/user.model");
 const userController = new UserController();
 
 class OrderController {
@@ -178,7 +179,7 @@ class OrderController {
             await cart.save();
 
             //manage stock 
-            await productModel.updateOne({ _id: cartItem.item}, {
+            await productModel.updateOne({ _id: cartItem.item }, {
                 $inc: {
                     "stock": quantity
                 }
@@ -287,7 +288,7 @@ class OrderController {
             //my carts
             const carts = await cartModel.distinct('_id', { user_id: req.user._id });
 
-            console.log("carts", carts)
+            console.log("carts", carts);
 
             //my orders
             const orders = await cartItemModel.find({
@@ -314,14 +315,54 @@ class OrderController {
 
     getOrders = async (req, res) => {
         try {
-            const { page = 1, size = 10, sort =
-                { _id: -1 } } = req.query;
+            let { page = 1, size = 10, sort = { _id: -1 } } = req.query;
 
-            const searchQuery = {
-                    status: {$nin: ["CART", "REMOVED"]}
+            let searchQuery = {
+                status: { $nin: ["CART", "REMOVED"] }
+            };
+
+            if (req.query.date) {
+                sort = {
+                    ...sort,
+                    _id: req.query.date
+                };
             }
 
-            const orders = await cartItemModel.find().populate({
+            if (req.query.status) {
+                searchQuery = {
+                    ...searchQuery,
+                    status: req.query.status
+                };
+            }
+            if (req.query.search) {
+                if (req.query.search == Number(req.query.search)) {
+                    const cart = await cartModel.findOne({
+                        cart_no: req.query.search
+                    });
+                    searchQuery = {
+                        ...searchQuery,
+                        cart: cart._id
+                    };
+                } else {
+                    const user = await userModel.findOne({
+                        email: req.query.search,
+                        is_deleted: false
+                    });
+                    const cart = await cartModel.distinct('_id', {
+                        user_id: user._id
+                    });
+                    console.log("cart", user._id);
+
+                    searchQuery = {
+                        ...searchQuery,
+                        cart: { $in: cart }
+                    };
+                }
+            }
+
+            console.log("searc", searchQuery);
+
+            const orders = await cartItemModel.find(searchQuery).populate({
                 path: "cart",
                 select: "cart_no user_id total discount grand_total",
                 populate: {
@@ -337,13 +378,13 @@ class OrderController {
                 data: orders
             });
         } catch (error) {
-            console.log("error", error)
+            console.log("error", error);
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,
                 msg: "Something Went Wrong!!"
             });
         }
-    }
+    };
 }
 
 module.exports = OrderController;
