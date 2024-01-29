@@ -327,29 +327,51 @@ class OrderController {
                     status: req.query.status
                 };
             }
-            if (req.query.search) {
-                if (req.query.search == Number(req.query.search)) {
-                    const cart = await cartModel.findOne({
-                        cart_no: req.query.search
-                    });
-                    if(cart){
-                        searchQuery = {
-                            ...searchQuery,
-                            cart_no: cart._id
-                        };
-                    }
-                } else {
-                    const user = await userModel.findOne({
-                        email: req.query.search
-                    });
-                    if(user){
-                        searchQuery = {
-                            ...searchQuery,
-                            user_id: user._id
-                        };
-                    }
+            if (req.query.email) {
+                const user = await userModel.findOne({
+                    email: req.query.email
+                });
+                if (user) {
+                    searchQuery = {
+                        ...searchQuery,
+                        user_id: user._id
+                    };
                 }
             }
+            if (req.query.cart_no) {
+                const cart = await cartModel.findOne({
+                    cart_no: req.query.cart_no
+                });
+                if (cart) {
+                    searchQuery = {
+                        ...searchQuery,
+                        cart_no: cart._id
+                    };
+                }
+            }
+            // if (req.query.search) {
+            //     if (req.query.search == Number(req.query.search)) {
+            //         const cart = await cartModel.findOne({
+            //             cart_no: req.query.search
+            //         });
+            //         if(cart){
+            //             searchQuery = {
+            //                 ...searchQuery,
+            //                 cart_no: cart._id
+            //             };
+            //         }
+            //     } else {
+            //         const user = await userModel.findOne({
+            //             email: req.query.search
+            //         });
+            //         if(user){
+            //             searchQuery = {
+            //                 ...searchQuery,
+            //                 user_id: user._id
+            //             };
+            //         }
+            //     }
+            // }
 
             const orders = await cartItemModel.find(searchQuery).populate({
                 path: "cart",
@@ -365,7 +387,7 @@ class OrderController {
 
             const totalCount = await cartItemModel.countDocuments({
                 status: { $nin: ["CART", "REMOVED"] }
-            })
+            });
 
             return res.status(httpStatus.OK).json({
                 success: true,
