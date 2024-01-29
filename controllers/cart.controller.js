@@ -268,9 +268,9 @@ class OrderController {
                 await cartModel.findByIdAndUpdate(checkCartItem.cart, { status: "COMPLETED" });
             }
 
-            return res.status(httpStatus.NOT_FOUND).json({
-                success: false,
-                msg: "Cart Item not found."
+            return res.status(httpStatus.OK).json({
+                success: true,
+                msg: "Order Status Changed"
             });
 
         } catch (error) {
@@ -321,13 +321,6 @@ class OrderController {
                 status: { $nin: ["CART", "REMOVED"] }
             };
 
-            if (req.query.date) {
-                sort = {
-                    ...sort,
-                    _id: req.query.date
-                };
-            }
-
             if (req.query.status) {
                 searchQuery = {
                     ...searchQuery,
@@ -339,28 +332,24 @@ class OrderController {
                     const cart = await cartModel.findOne({
                         cart_no: req.query.search
                     });
-                    searchQuery = {
-                        ...searchQuery,
-                        cart: cart._id
-                    };
+                    if(cart){
+                        searchQuery = {
+                            ...searchQuery,
+                            cart_no: cart._id
+                        };
+                    }
                 } else {
                     const user = await userModel.findOne({
-                        email: req.query.search,
-                        is_deleted: false
+                        email: req.query.search
                     });
-                    const cart = await cartModel.distinct('_id', {
-                        user_id: user._id
-                    });
-                    console.log("cart", user._id);
-
-                    searchQuery = {
-                        ...searchQuery,
-                        cart: { $in: cart }
-                    };
+                    if(user){
+                        searchQuery = {
+                            ...searchQuery,
+                            user_id: user._id
+                        };
+                    }
                 }
             }
-
-            console.log("searc", searchQuery);
 
             const orders = await cartItemModel.find(searchQuery).populate({
                 path: "cart",
@@ -369,13 +358,22 @@ class OrderController {
                     path: "user_id",
                     select: "firstname lastname email contact"
                 }
+            }).populate({
+                path: "item",
+                select: "product_name description category product_sku price images"
             }).skip((page - 1) * size).limit(size);
 
+            const totalCount = await cartItemModel.countDocuments({
+                status: { $nin: ["CART", "REMOVED"] }
+            })
 
             return res.status(httpStatus.OK).json({
                 success: true,
                 msg: "Orders",
-                data: orders
+                data: orders,
+                page,
+                size,
+                totalCount
             });
         } catch (error) {
             console.log("error", error);
