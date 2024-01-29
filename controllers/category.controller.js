@@ -2,6 +2,7 @@ const httpStatus = require("http-status");
 const categoryModel = require("../models/category.model");
 const Joi = require("joi");
 const upload = require("../middlewares/upload");
+const productModel = require("../models/product.model");
 
 class CategoryController {
 
@@ -114,7 +115,17 @@ class CategoryController {
                 };
             }
 
-            const categories = await categoryModel.find(searchQuery).select("name order image createdAt").skip((page - 1) * size).limit(size).sort(sort);
+            let categories = await categoryModel.find(searchQuery).select("name order image createdAt").skip((page - 1) * size).limit(size).sort(sort);
+
+            categories = await Promise.all(
+                categories.map(async value => {
+                    value = value.toJSON();
+                    value.product_count = await productModel.countDocuments({
+                        category: value._id
+                    });
+                    return value;
+                })
+            );
 
             const totalCount = await categoryModel.countDocuments({
                 is_active: true,
@@ -171,8 +182,8 @@ class CategoryController {
 
             try {
                 const id = req.params.id;
-                if(req.file){
-                    req.body.image = req.file.path
+                if (req.file) {
+                    req.body.image = req.file.path;
                 }
                 const category = await categoryModel.findById(id);
                 if (!category) {

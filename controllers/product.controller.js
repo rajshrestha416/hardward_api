@@ -143,11 +143,6 @@ class ProductController {
             const totalCount = await productModel.countDocuments({
                 is_deleted: false
             });
-            
-            let categoryPCount = 0
-            if(req.query.category){
-                categoryPCount = await productModel.countDocuments({category: req.query.category});
-            }
 
             return res.status(httpStatus.OK).json({
                 success: true,
@@ -155,8 +150,7 @@ class ProductController {
                 data: products,
                 totalCount,
                 size: parseInt(size),
-                page: parseInt(page),
-                categoryPCount: categoryPCount || 0
+                page: parseInt(page)
             });
         } catch (error) {
             console.log("err", error)
