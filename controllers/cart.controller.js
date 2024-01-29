@@ -329,23 +329,25 @@ class OrderController {
             }
             if (req.query.email) {
                 const user = await userModel.findOne({
-                    email: req.query.email
+                    email: req.query.email,
+                    is_deleted: false
                 });
-                if (user) {
+
+                const cart = await cartModel.distinct('_id', {user_id: user._id})
+                console.log("cart", cart)
+                if (cart.length) {
                     searchQuery = {
                         ...searchQuery,
-                        user_id: user._id
+                        cart: {$in:cart}
                     };
                 }
             }
             if (req.query.cart_no) {
-                const cart = await cartModel.findOne({
-                    cart_no: req.query.cart_no
-                });
-                if (cart) {
+                const cart = await cartModel.distinct('_id', {cart_no: req.query.cart_no})
+                if (cart.length) {
                     searchQuery = {
                         ...searchQuery,
-                        cart_no: cart._id
+                        cart: {$in:cart}
                     };
                 }
             }
@@ -373,6 +375,7 @@ class OrderController {
             //     }
             // }
 
+            console.log("searchQuery", JSON.stringify(searchQuery))
             const orders = await cartItemModel.find(searchQuery).populate({
                 path: "cart",
                 select: "cart_no user_id total discount grand_total",
