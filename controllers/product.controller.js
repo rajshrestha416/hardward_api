@@ -2,6 +2,7 @@ const httpStatus = require("http-status");
 const productModel = require("../models/product.model");
 const Joi = require("joi");
 const upload = require("../middlewares/upload");
+const reviewModel = require("../models/review.model");
 
 class ProductController {
     // constructor(){
@@ -134,7 +135,6 @@ class ProductController {
                     product_name: { $regex: req.query.search, $options: 'i' }
                 };
             }
-            console.log("sort", sort)
             const products = await productModel.find(searchQuery).select("product_name description category product_sku price images stock").populate({
                 path: "category",
                 select: "_id name"
@@ -164,12 +164,23 @@ class ProductController {
     getProduct = async (req, res) => {
         try {
             const sku = req.params.sku;
-            const product = await productModel.findOne({
+            let product = await productModel.findOne({
                 product_sku: sku
             }).select("product_name description category product_sku price images stock").populate({
                 path: "category",
                 select: "_id name"
             });
+
+            const rating = await reviewModel.aggregate([
+                { $match: { product: product._id } },
+                {$group: {
+                    _id: null,
+                    rating: {$avg: '$rating'}
+                }},
+            ]);
+
+            product = product.toJSON()
+            product.rating = rating.length ?  rating[0].rating : 0
             if (!product) {
                 return res.status(httpStatus.NOT_FOUND).json({
                     success: false,
@@ -179,9 +190,10 @@ class ProductController {
             return res.status(httpStatus.OK).json({
                 success: true,
                 msg: "Product!!",
-                data: product
+                data: product,
             });
         } catch (error) {
+            console.log("error", error)
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,
                 msg: "Something Went Wrong!!"
