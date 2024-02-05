@@ -171,6 +171,12 @@ class ProductController {
                 select: "_id name"
             });
 
+            if (!product) {
+                return res.status(httpStatus.NOT_FOUND).json({
+                    success: false, 
+                    msg: "Product Not Found!!"
+                });
+            }
             const rating = await reviewModel.aggregate([
                 { $match: { product: product._id } },
                 {$group: {
@@ -181,12 +187,6 @@ class ProductController {
 
             product = product.toJSON()
             product.rating = rating.length ?  rating[0].rating : 0
-            if (!product) {
-                return res.status(httpStatus.NOT_FOUND).json({
-                    success: false,
-                    msg: "Product Not Found!!"
-                });
-            }
             return res.status(httpStatus.OK).json({
                 success: true,
                 msg: "Product!!",
