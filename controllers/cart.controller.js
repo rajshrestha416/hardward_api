@@ -261,7 +261,7 @@ class OrderController {
 
             //Update CartItem Status
             const cartItems = await cartItemModel.updateMany({
-                cart: purchase_order_id
+                cart: cart_id
             },
                 {
                     status: "ORDER"
