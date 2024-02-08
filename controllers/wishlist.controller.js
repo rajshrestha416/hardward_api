@@ -65,7 +65,7 @@ class WishListController {
             {
                 path: "product",
                 select: "product_name product_sku price images"
-            }]).sort(sort).limit(size).skip((page - 1) * size);
+            }]).sort(sort).limit(size).skip((page - 1) * size).lean();
 
             return res.status(httpStatus.OK).json({
                 success: true,

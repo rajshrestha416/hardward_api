@@ -288,7 +288,7 @@ class OrderController {
             });
         }
     };
-
+ 
     cartStatusChange = async (req, res) => {
         try {
             const { cartItem, status } = req.body;
@@ -348,7 +348,7 @@ class OrderController {
             }).populate({
                 path: "item",
                 select: "product_name description category product_sku price images"
-            }).skip((page - 1) * size).limit(size);
+            }).skip((page - 1) * size).limit(size).lean();
 
             return res.status(httpStatus.OK).json({
                 success: true,
@@ -434,7 +434,7 @@ class OrderController {
             }).populate({
                 path: "item",
                 select: "product_name description category product_sku price images"
-            }).skip((page - 1) * size).limit(size);
+            }).skip((page - 1) * size).limit(size).lean();
 
             const totalCount = await cartItemModel.countDocuments({
                 status: { $nin: ["CART", "REMOVED"] }
