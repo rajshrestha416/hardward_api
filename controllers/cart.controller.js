@@ -199,7 +199,7 @@ class OrderController {
 
     checkout = async (req, res) => {
         try {
-            const { cart_id, purchase_order_name } = req.query;
+            const { purchase_order_id, purchase_order_name } = req.query;
 
             const shipping_address = purchase_order_name;
 
@@ -212,15 +212,16 @@ class OrderController {
 
             //Update CartItem Status
             const cartItems = await cartItemModel.updateMany({
-                cart: cart_id
+                cart: purchase_order_id
             },
                 {
                     status: "ORDER"
                 });
 
             //Update Cart Status
-            const cart = await cartModel.findOneAndUpdate({ _id: cart_id }, {
-                status: "ORDER"
+            const cart = await cartModel.findOneAndUpdate({ _id: purchase_order_id }, {
+                status: "ORDER",
+                shipping_address: shipping_address
             });
 
             //create 
