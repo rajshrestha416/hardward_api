@@ -121,7 +121,7 @@ class OrderController {
             }).populate({
                 path: "item",
                 select: "product_name porduct_sku images price"
-            }).select("item price quantity");
+            }).select("item price quantity").lean();
 
             return res.status(httpStatus.OK).json({
                 success: true,
