@@ -268,7 +268,7 @@ class OrderController {
                 });
 
             //Update Cart Status
-            const cart = await cartModel.findOneAndUpdate({ _id: purchase_order_id }, {
+            const cart = await cartModel.findOneAndUpdate({ _id: cart_id }, {
                 status: "ORDER",
                 shipping_address: shipping_address
             });
@@ -292,7 +292,7 @@ class OrderController {
     cartStatusChange = async (req, res) => {
         try {
             const { cartItem, status } = req.body;
-
+ 
             //FIND CART
             const checkCartItem = await cartItemModel.findOne({
                 _id: cartItem
