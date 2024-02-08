@@ -10,7 +10,7 @@ router.get('/my-order', verifyUser, cartController.myOrder)
 
 router.get('/my-cart', verifyUser, cartController.getMyCart)
 
-router.put('/checkout/:cart_id', verifyUser, cartController.checkout)
+router.put('/checkout', verifyUser, cartController.checkout)
 
 router.put('/add-remove-item', verifyUser, cartController.removeItems)
 

@@ -199,16 +199,16 @@ class OrderController {
 
     checkout = async (req, res) => {
         try {
-            const { cart_id } = req.params;
+            const { cart_id, purchase_order_name } = req.query;
 
-            const shipping_address = req.body.shipping_address;
+            const shipping_address = purchase_order_name;
 
-            if (!shipping_address && shipping_address !== "") {
-                return res.status(httpStatus.BAD_REQUEST).json({
-                    success: false,
-                    msg: "Please Add Shipping Address!!"
-                });
-            }
+            // if (!shipping_address && shipping_address !== "") {
+            //     return res.status(httpStatus.BAD_REQUEST).json({
+            //         success: false,
+            //         msg: "Please Add Shipping Address!!"
+            //     });
+            // }
 
             //Update CartItem Status
             const cartItems = await cartItemModel.updateMany({
@@ -226,15 +226,22 @@ class OrderController {
             //create 
             await userController.createCart(cart.user_id);
 
-            return res.status(httpStatus.OK).json({
-                success: true,
-                msg: "Checkout Completed!!"
+            res.writeHead(302, {
+                Location: `http://localhost:3000/profile`,
             });
+            res.end();
+            return null;
+
         } catch (error) {
-            return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-                success: false,
-                msg: "Something Went Wrong!!"
+            // return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+            //     success: false,
+            //     msg: "Something Went Wrong!!"
+            // });
+            res.writeHead(302, {
+                Location: `http://localhost:3000/profile`,
             });
+            res.end();
+            return null;
         }
     };
 
@@ -329,11 +336,11 @@ class OrderController {
             }
             if (req.query.email) {
                 const user = await userModel.findOne({
-                    email: {$regex: req.query.email, $options:'i'},
+                    email: { $regex: req.query.email, $options: 'i' },
                     is_deleted: false
                 });
-                let cart = []
-                if(user){
+                let cart = [];
+                if (user) {
                     cart = await cartModel.distinct('_id', { user_id: user._id });
                 }
                 searchQuery = {
