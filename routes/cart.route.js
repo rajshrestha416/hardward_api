@@ -11,7 +11,7 @@ router.get('/my-order', verifyUser, cartController.myOrder)
 router.get('/my-cart', verifyUser, cartController.getMyCart)
 
 router.get('/checkout', cartController.checkout)
-router.post('/checkout', cartController.checkout)
+router.put('/checkout/:cart_id', cartController.checkoutMobile)
 
 router.put('/add-remove-item', verifyUser, cartController.removeItems)
 

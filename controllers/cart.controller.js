@@ -246,6 +246,49 @@ class OrderController {
         }
     };
 
+    checkoutMobile = async (req, res) => {
+        try {
+            const { cart_id } = req.params;
+
+            const shipping_address = req.body.shipping_address;
+
+            // if (!shipping_address && shipping_address !== "") {
+            //     return res.status(httpStatus.BAD_REQUEST).json({
+            //         success: false,
+            //         msg: "Please Add Shipping Address!!"
+            //     });
+            // }
+
+            //Update CartItem Status
+            const cartItems = await cartItemModel.updateMany({
+                cart: purchase_order_id
+            },
+                {
+                    status: "ORDER"
+                });
+
+            //Update Cart Status
+            const cart = await cartModel.findOneAndUpdate({ _id: purchase_order_id }, {
+                status: "ORDER",
+                shipping_address: shipping_address
+            });
+
+            //create 
+            await userController.createCart(cart.user_id);
+
+            return res.status(httpStatus.OK).json({
+                success: true,
+                msg: "Checkout Completed"
+            })
+
+        } catch (error) {
+            return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                msg: "Something Went Wrong!!"
+            });
+        }
+    };
+
     cartStatusChange = async (req, res) => {
         try {
             const { cartItem, status } = req.body;
